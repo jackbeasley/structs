@@ -145,7 +145,6 @@ func TestMap_Indirect(t *testing.T) {
 			t.Errorf("Map should have the value %v", val)
 		}
 	}
-
 }
 
 func TestMap_CustomTag(t *testing.T) {
