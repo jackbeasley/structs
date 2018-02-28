@@ -113,6 +113,41 @@ func TestMap_Tag(t *testing.T) {
 
 }
 
+func TestMap_Indirect(t *testing.T) {
+	aVal := "a-value"
+	bVal := 2
+	cVal := true
+	var T = struct {
+		A *string `structs:",indirect"`
+		B *int    `structs:",indirect"`
+		C *bool   `structs:",indirect"`
+	}{
+		A: &aVal,
+		B: &bVal,
+		C: &cVal,
+	}
+
+	a := Map(T)
+	fmt.Println(a)
+
+	inMap := func(val interface{}) bool {
+		for _, v := range a {
+			if reflect.DeepEqual(v, val) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	for _, val := range []interface{}{"a-value", 2, true} {
+		if !inMap(val) {
+			t.Errorf("Map should have the value %v", val)
+		}
+	}
+
+}
+
 func TestMap_CustomTag(t *testing.T) {
 	var T = struct {
 		A string `json:"x"`

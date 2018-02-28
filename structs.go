@@ -131,6 +131,18 @@ func (s *Struct) FillMap(out map[string]interface{}) {
 			finalVal = val.Interface()
 		}
 
+		if tagOpts.Has("indirect") {
+			v := reflect.ValueOf(val.Interface())
+			if v.Kind() == reflect.Ptr {
+				v = v.Elem()
+				if v.Kind() != reflect.Map || v.Kind() != reflect.Struct {
+					out[name] = v.Interface()
+					continue
+				}
+			}
+
+		}
+
 		if tagOpts.Has("string") {
 			s, ok := val.Interface().(fmt.Stringer)
 			if ok {
