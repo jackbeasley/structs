@@ -52,6 +52,13 @@ func New(s interface{}) *Struct {
 //   // Map will panic if Animal does not implement String().
 //   Field *Animal `structs:"field,string"`
 //
+// A tag value with the content of "indirect" will dereference pointers to get
+// the value. Example:
+//
+//   // The value will be the int value that the *int points to.
+//   // If the pointer is nil, it is ignored as if it also had omitempty
+//   Field *int `structs:"field,indirect"`
+//
 // A tag value with the option of "flatten" used in a struct field is to flatten its fields
 // in the output map. Example:
 //
@@ -104,6 +111,20 @@ func (s *Struct) FillMap(out map[string]interface{}) {
 			name = tagName
 		}
 
+		if tagOpts.Has("indirect") {
+			v := reflect.ValueOf(val.Interface())
+			// Only consider pointer variables
+			if v.Kind() == reflect.Ptr && !v.IsNil() {
+				v = v.Elem()
+				// Ignore maps and structs to not break isSubStruct
+				if v.Kind() != reflect.Map || v.Kind() != reflect.Struct {
+					val = v
+				}
+			} else if v.IsNil() {
+				continue
+			}
+		}
+
 		// if the value is a zero value and the field is marked as omitempty do
 		// not include
 		if tagOpts.Has("omitempty") {
@@ -129,19 +150,6 @@ func (s *Struct) FillMap(out map[string]interface{}) {
 			}
 		} else {
 			finalVal = val.Interface()
-		}
-
-		if tagOpts.Has("indirect") {
-			v := reflect.ValueOf(val.Interface())
-			// Only consider pointer variables
-			if v.Kind() == reflect.Ptr {
-				v = v.Elem()
-				// Ignore maps and structs to not break isSubStruct
-				if v.Kind() != reflect.Map || v.Kind() != reflect.Struct {
-					out[name] = v.Interface()
-					continue
-				}
-			}
 		}
 
 		if tagOpts.Has("string") {

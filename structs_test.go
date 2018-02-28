@@ -116,15 +116,21 @@ func TestMap_Tag(t *testing.T) {
 func TestMap_Indirect(t *testing.T) {
 	aVal := "a-value"
 	bVal := 2
-	cVal := true
+	cVal := 0
+	dVal := true
+	var eVal *int
 	var T = struct {
 		A *string `structs:",indirect"`
 		B *int    `structs:",indirect"`
-		C *bool   `structs:",indirect"`
+		C *int    `structs:",indirect"`
+		D *bool   `structs:",indirect"`
+		E *int    `structs:",indirect"` // nil pointer, should be omitted
 	}{
 		A: &aVal,
 		B: &bVal,
 		C: &cVal,
+		D: &dVal,
+		E: eVal,
 	}
 
 	a := Map(T)
