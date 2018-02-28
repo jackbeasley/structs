@@ -134,7 +134,6 @@ func TestMap_Indirect(t *testing.T) {
 	}
 
 	a := Map(T)
-	fmt.Println(a)
 
 	inMap := func(val interface{}) bool {
 		for _, v := range a {
