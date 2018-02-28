@@ -133,14 +133,15 @@ func (s *Struct) FillMap(out map[string]interface{}) {
 
 		if tagOpts.Has("indirect") {
 			v := reflect.ValueOf(val.Interface())
+			// Only consider pointer variables
 			if v.Kind() == reflect.Ptr {
 				v = v.Elem()
+				// Ignore maps and structs to not break isSubStruct
 				if v.Kind() != reflect.Map || v.Kind() != reflect.Struct {
 					out[name] = v.Interface()
 					continue
 				}
 			}
-
 		}
 
 		if tagOpts.Has("string") {
