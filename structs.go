@@ -56,8 +56,12 @@ func New(s interface{}) *Struct {
 // the value. Example:
 //
 //   // The value will be the int value that the *int points to.
-//   // If the pointer is nil, it is ignored as if it also had omitempty
+//   // If the *int is nil, it is ignored as if it also had omitempty.
 //   Field *int `structs:"field,indirect"`
+//
+//   // The value will be the int value that the *int points to.
+//   // If the int is 0 (zero value for type), it is ommitted by omitempty
+//   Field *int `structs:"field,indirect,omitempty"`
 //
 // A tag value with the option of "flatten" used in a struct field is to flatten its fields
 // in the output map. Example:
@@ -113,14 +117,12 @@ func (s *Struct) FillMap(out map[string]interface{}) {
 
 		if tagOpts.Has("indirect") {
 			v := reflect.ValueOf(val.Interface())
-			// Only consider pointer variables
+			// Only consider non-nil pointer variables
 			if v.Kind() == reflect.Ptr && !v.IsNil() {
-				v = v.Elem()
-				// Ignore maps and structs to not break isSubStruct
-				if v.Kind() != reflect.Map || v.Kind() != reflect.Struct {
-					val = v
-				}
+				// Dereferance pointer and treat as regular value
+				val = v.Elem()
 			} else if v.IsNil() {
+				// Ignore nil pointer values
 				continue
 			}
 		}
